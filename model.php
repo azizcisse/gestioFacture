@@ -35,14 +35,33 @@ class Database
 
     public function countBills(): int
     {
-        return (int) $this->getconnexion()->query("SELECT COUNT(id) as count FROM factures")->fetch()[0];
+        return (int)$this->getconnexion()->query("SELECT COUNT(id) as count FROM factures")->fetch()[0];
     }
 
-    public function getSingleBill(int $id)
+    public function getSingleBill($id)
     {
         $q = $this->getconnexion()->prepare("SELECT * FROM factures WHERE  id = :id");
         $q->execute(['id' => $id]);
         return $q->fetch(PDO::FETCH_OBJ);
     }
 
+    public function update(int $id, string $customer, string $cashier, int $amount, int $received, int $returned, string $state)
+    {
+        $q = $this->getconnexion()->prepare("UPDATE factures SET customer = :customer, cashier = :cashier, amount = :amount, received = :received, returned = :returned, state = :state WHERE id = :id");
+        return $q->execute([
+            'customer' => $customer,
+            'cashier' => $cashier,
+            'amount' => $amount,
+            'received' => $received,
+            'returned' => $returned,
+            'state' => $state,
+            'id'     => $id
+        ]);
+    }
+
+    public function delete($id): bool
+    {
+        $q = $this->getconnexion()->prepare("DELETE FROM factures WHERE id = :id");
+        return $q->execute(['id' => $id ]);
+    }
 }

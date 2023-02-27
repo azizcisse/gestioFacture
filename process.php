@@ -59,3 +59,51 @@ if (isset($_POST['action']) && $_POST['action'] === 'fetch') {
     }
 }
 
+//Info pour detail de facture
+if (isset($_POST['workingId'])) {
+    $workingId = $_POST['workingId'];
+    echo json_encode($db->getSingleBill($workingId));
+}
+
+//update des factures
+if (isset($_POST['action']) && $_POST['action'] === 'update') {
+    extract($_POST);
+    $returned = $received - $amount;
+    $db->update($id, $customer, $cashier, $amount, $received, $returned, $state);
+    echo 'prefect';
+}
+
+//Info pour detail de facture
+if (isset($_POST['informationId'])) {
+    $informationId = $_POST['informationId'];
+    echo json_encode($db->getSingleBill($informationId));
+}
+
+//Suppression  facture
+if (isset($_POST['deletionId'])) {
+    $deletionId = $_POST['deletionId'];
+    echo $db->delete($deletionId);
+}
+
+//Exportation
+if (isset($_GET['action']) && $_GET['action'] === 'export') {
+    $excelFileName = "Factures" . date('YmdHis') . '.xls';
+    header("Content-Type: application/vnd.ms-excel");
+    header("Content-Disposition: attachment; filename=$excelFileName");
+
+    $columnName = ['id', 'Client', 'Caissier', 'Montant', 'Perçu', 'retourné', 'Etat'];
+
+    $data = implode("\t", array_values($columnName)) . "\n";
+    if ($db->countBills() > 0) {
+        $bills = $db->read();
+        foreach ($bills as $bill) {
+            $excelData = [$bill->id, $bill->customer, $bill->cashier, $bill->amount, $bill->received, $bill->returned, $bill->state];
+            $data .= implode("\t", $excelData) . "\n";
+        }
+    } else {
+        $data = "Aucunes facture trouvées..." . "\n";
+    }
+
+    echo $data;
+    die();
+}
